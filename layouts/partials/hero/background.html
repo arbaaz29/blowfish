@@ -1,24 +1,57 @@
 {{ $disableImageOptimization := .Page.Site.Params.disableImageOptimization | default false }}
 
-{{- $images := .Resources.ByType "image" -}}
-{{- $featured := $images.GetMatch "*background*" -}}
-{{- if not $featured }}{{ $featured = $images.GetMatch "*feature*" }}{{ end -}}
-{{- if not $featured }}{{ $featured = $images.GetMatch "{*cover*,*thumbnail*}" }}{{ end -}}
+{{- $featured := "" -}}
 
+{{/* Priority 1: Check for cardImage in front matter */}}
+{{- if .Params.cardImage -}}
+  {{- $featured = resources.Get .Params.cardImage -}}
+{{- end -}}
+
+{{/* Priority 2: Resource images matching "*background*" */}}
+{{- if not $featured -}}
+  {{- $images := .Resources.ByType "image" -}}
+  {{- $featured = $images.GetMatch "*background*" -}}
+{{- end -}}
+
+{{/* Priority 3: Resource images matching "*feature*" */}}
+{{- if not $featured -}}
+  {{- $images := .Resources.ByType "image" -}}
+  {{- $featured = $images.GetMatch "*feature*" -}}
+{{- end -}}
+
+{{/* Priority 4: Resource images matching "*cover*" or "*thumbnail*" */}}
+{{- if not $featured -}}
+  {{- $images := .Resources.ByType "image" -}}
+  {{- $featured = $images.GetMatch "{*cover*,*thumbnail*}" -}}
+{{- end -}}
+
+{{/* Priority 5: featureimage (remote URL) */}}
 {{ if and .Params.featureimage (not $featured) }}
-{{- $url:= .Params.featureimage -}}
-{{ $featured = resources.GetRemote $url }}
+  {{- $url := .Params.featureimage -}}
+  {{ $featured = resources.GetRemote $url }}
 {{ end }}
 
-{{- if not $featured }}
- {{ with .Site.Params.defaultBackgroundImage }}
-  {{ if or (strings.HasPrefix . "http:") (strings.HasPrefix . "https:") }}
-   {{ $featured = resources.GetRemote . }}
-  {{ else }}
-   {{ $featured = resources.Get . }}
+{{/* Priority 6: Site's defaultBackgroundImage */}}
+{{- if not $featured -}}
+  {{ with .Site.Params.defaultBackgroundImage }}
+    {{ if or (strings.HasPrefix . "http:") (strings.HasPrefix . "https:") }}
+      {{ $featured = resources.GetRemote . }}
+    {{ else }}
+      {{ $featured = resources.Get . }}
+    {{ end }}
   {{ end }}
- {{ end }}
-{{ end -}}
+{{- end -}}
+
+{{/* Priority 7: Site's defaultFeaturedImage (fallback) */}}
+{{- if not $featured -}}
+  {{ with .Site.Params.defaultFeaturedImage }}
+    {{ if or (strings.HasPrefix . "http:") (strings.HasPrefix . "https:") }}
+      {{ $featured = resources.GetRemote . }}
+    {{ else }}
+      {{ $featured = resources.Get . }}
+    {{ end }}
+  {{ end }}
+{{- end -}}
 
 {{ $isParentList := eq (.Scratch.Get "scope") "list"  }}
 {{ $shouldBlur := $.Params.layoutBackgroundBlur | default (or 
@@ -29,6 +62,7 @@
         (and ($.Site.Params.article.layoutBackgroundHeaderSpace | default true) (not $isParentList)) 
         (and ($.Site.Params.list.layoutBackgroundHeaderSpace | default true) ($isParentList))
     ) }}
+
 {{- with $featured -}}
 
 {{ if $shouldAddHeaderSpace | default true}}
