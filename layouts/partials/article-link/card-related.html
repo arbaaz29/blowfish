@@ -10,14 +10,39 @@
       {{- range first 6 . }}
       <meta property="og:image" content="{{ . | absURL }}" />{{ end -}}
       {{- else -}}
-      {{- $images := $.Resources.ByType "image" -}}
-      {{- $featured := $images.GetMatch "*feature*" -}}
-      {{- if not $featured }}{{ $featured = $images.GetMatch "{*cover*,*thumbnail*}" }}{{ end -}}
-      {{ if and .Params.featureimage (not $featured) }}
-      {{- $url:= .Params.featureimage -}}
-      {{ $featured = resources.GetRemote $url }}
-      {{ end }}
-      {{- if not $featured }}{{ with .Site.Params.defaultFeaturedImage }}{{ $featured = resources.Get . }}{{ end }}{{ end -}}
+      
+      {{- $featured := "" -}}
+      
+      {{/* Priority 1: Check for cardImage in front matter */}}
+      {{- if .Params.cardImage -}}
+        {{- $featured = resources.Get .Params.cardImage -}}
+      {{- end -}}
+      
+      {{/* Priority 2: Resource images matching "*feature*" */}}
+      {{- if not $featured -}}
+        {{- $images := $.Resources.ByType "image" -}}
+        {{- $featured = $images.GetMatch "*feature*" -}}
+      {{- end -}}
+      
+      {{/* Priority 3: Resource images matching "*cover*" or "*thumbnail*" */}}
+      {{- if not $featured -}}
+        {{- $images := $.Resources.ByType "image" -}}
+        {{- $featured = $images.GetMatch "{*cover*,*thumbnail*}" -}}
+      {{- end -}}
+      
+      {{/* Priority 4: featureimage (remote URL) */}}
+      {{- if and .Params.featureimage (not $featured) -}}
+        {{- $url := .Params.featureimage -}}
+        {{- $featured = resources.GetRemote $url -}}
+      {{- end -}}
+      
+      {{/* Priority 5: Site's defaultFeaturedImage */}}
+      {{- if not $featured -}}
+        {{- with .Site.Params.defaultFeaturedImage -}}
+          {{- $featured = resources.Get . -}}
+        {{- end -}}
+      {{- end -}}
+      
       {{- with $featured -}}
       {{ if or $disableImageOptimization (strings.HasSuffix $featured ".svg")}}
         {{ with . }}
