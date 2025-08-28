@@ -20,9 +20,10 @@
   {{ with (.Params.Summary | default .Params.Description) | default .Site.Params.description -}}
     <meta name="description" content="{{ . }}">
   {{- end }}
-  {{ with  .Params.Tags | default .Site.Params.keywords -}}
-    <meta name="keywords" content="{{ range . }}{{ . }},{{ end -}}">
-  {{- end }}
+  {{ $keywords := .Params.tags | default .Site.Params.keywords }}
+  {{ with $keywords }}
+    <meta name="keywords" content="{{ delimit (uniq .) ", " }}">
+  {{ end }}
   {{ with .Site.Params.robots }}
     <meta name="robots" content="{{ . }}">
   {{ end }}
