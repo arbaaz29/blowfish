@@ -1,208 +1,224 @@
-{{/* Logo section */}}
-{{ define "HeaderLogo" }}
-  {{ if .Site.Params.Logo }}
-    {{ $logo := resources.Get .Site.Params.Logo }}
-    {{ if $logo }}
-      <div>
-        <a href="{{ "" | relLangURL }}" class="flex">
-          <span class="sr-only">{{ .Site.Title | markdownify }}</span>
-          {{ if eq $logo.MediaType.SubType "svg" }}
-            <span class="logo object-scale-down object-left nozoom">
-              {{ $logo.Content | safeHTML }}
-            </span>
-          {{ else }}
-            <img
-              src="{{ $logo.RelPermalink }}"
-              width="{{ div $logo.Width 2 }}"
-              height="{{ div $logo.Height 2 }}"
-              class="logo max-h-[5rem] max-w-[5rem] object-scale-down object-left nozoom"
-              alt="{{ .Site.Title }}">
-          {{ end }}
-        </a>
-      </div>
-    {{ end }}
-  {{- end }}
-{{ end }}
-
-{{/* Desktop navigation */}}
-{{ define "HeaderDesktopNavigation" }}
-  <nav class="hidden md:flex items-center gap-x-5 md:ml-12 h-12">
-    {{ if .Site.Menus.main }}
-      {{ range .Site.Menus.main }}
-        {{ partial "header/header-option.html" . }}
-      {{ end }}
-    {{ end }}
-
-    {{ partial "translations.html" . }}
-
-    {{ if .Site.Params.enableSearch | default false }}
-      <button
-        id="search-button"
-        aria-label="Search"
-        class="text-base hover:text-primary-600 dark:hover:text-primary-400"
-        title="{{ i18n "search.open_button_title" }}">
-        {{ partial "icon.html" "search" }}
-      </button>
-    {{ end }}
-
-    {{ if .Site.Params.footer.showAppearanceSwitcher | default false }}
-      <div class="{{ if .Site.Params.footer.showScrollToTop | default true -}}{{- end }} flex items-center">
-        <button
-          id="appearance-switcher"
-          aria-label="Dark mode switcher"
-          type="button"
-          class="text-base hover:text-primary-600 dark:hover:text-primary-400">
-          <div class="flex items-center justify-center dark:hidden">
-            {{ partial "icon.html" "moon" }}
-          </div>
-          <div class="items-center justify-center hidden dark:flex">
-            {{ partial "icon.html" "sun" }}
-          </div>
-        </button>
-      </div>
-    {{ end }}
-  </nav>
-{{ end }}
-
-{{/* Mobile navigation */}}
-{{ define "HeaderMobileNavigation" }}
-  <div class="flex md:hidden items-center gap-x-5 md:ml-12 h-12">
-    <span></span>
-
-    {{ partial "translations.html" . }}
-    {{ if .Site.Params.enableSearch | default false }}
-      <button
-        id="search-button-mobile"
-        aria-label="Search"
-        class="text-base hover:text-primary-600 dark:hover:text-primary-400"
-        title="{{ i18n "search.open_button_title" }}">
-        {{ partial "icon.html" "search" }}
-      </button>
-    {{ end }}
-
-    {{ if .Site.Params.footer.showAppearanceSwitcher | default false }}
-      <button
-        id="appearance-switcher-mobile"
-        aria-label="Dark mode switcher"
-        type="button"
-        class="text-base hover:text-primary-600 dark:hover:text-primary-400 ltr:mr-1 rtl:ml-1">
-        <div class="flex items-center justify-center dark:hidden">
-          {{ partial "icon.html" "moon" }}
-        </div>
-        <div class="items-center justify-center hidden dark:flex">
-          {{ partial "icon.html" "sun" }}
-        </div>
-      </button>
-    {{ end }}
-  </div>
-{{ end }}
-
-{{ define "HeaderMobileMenu" }}
-  <div class="-my-2 md:hidden">
-    <div id="menu-button" class="block">
-      {{ if .Site.Menus.main }}
-        <div class="cursor-pointer hover:text-primary-600 dark:hover:text-primary-400">
-          {{ partial "icon.html" "bars" }}
-        </div>
-        <div
-          id="menu-wrapper"
-          class="fixed inset-0 z-30 invisible w-screen h-screen m-0 overflow-auto transition-opacity opacity-0 cursor-default bg-neutral-100/50 backdrop-blur-sm dark:bg-neutral-900/50 pt-[5px]">
-          <ul
-            class="flex space-y-2 mt-3 flex-col items-end w-full px-6 py-6 mx-auto overflow-visible list-none ltr:text-right rtl:text-left max-w-7xl">
-            <li id="menu-close-button">
-              <span
-                class="cursor-pointer inline-block align-text-bottom hover:text-primary-600 dark:hover:text-primary-400">
-                {{ partial "icon.html" "xmark" }}
-              </span>
-            </li>
-
-            {{ range .Site.Menus.main }}
-              {{ partial "header/header-mobile-option.html" . }}
-            {{ end }}
-
-          </ul>
-          {{ if .Site.Menus.subnavigation }}
-            <hr>
-            <ul
-              class="flex mt-4 flex-col items-end w-full px-6 py-6 mx-auto overflow-visible list-none ltr:text-right rtl:text-left max-w-7xl">
-              {{ range .Site.Menus.subnavigation }}
-                <li class="mb-1">
-                  <a
-                    href="{{ .URL }}"
-                    {{ if or (strings.HasPrefix .URL "http:" ) (strings.HasPrefix .URL "https:") }}
-                      target="_blank"
-                    {{ end }}
-                    class="flex items-center">
-                    {{ if .Pre }}
-                      <span {{ if and .Pre .Name }}class="mr-3"{{ end }}>
-                        {{ partial "icon.html" .Pre }}
-                      </span>
-                    {{ end }}
-                    <p class="text-sm font-sm text-gray-500 hover:text-gray-900" title="{{ .Title }}">
-                      {{ .Name | markdownify }}
-                    </p>
-                  </a>
-                </li>
-              {{ end }}
-            </ul>
-          {{ end }}
-        </div>
-      {{ end }}
-    </div>
-  </div>
-{{ end }}
-
-{{/* ========== Render HTML ========== */}}
-<div
-  class="main-menu flex items-center justify-between px-4 py-6 sm:px-6 md:justify-start gap-x-3 pt-[2px] pr-0 pb-[3px] pl-0">
-  {{ template "HeaderLogo" . }}
-  <div class="flex flex-1 items-center justify-between">
-  {{ if not .Site.Params.disableTextInHeader | default true }}
-    <nav class="flex space-x-3">
-        <a href="{{ "" | relLangURL }}" class="site-title-link">
-          {{ .Site.Title | markdownify }}
-        </a>
-    </nav>
+<head>
+  <meta charset="utf-8">
+  {{ with .Site.Language.Params.htmlCode | default .Site.LanguageCode }}
+    <meta http-equiv="content-language" content="{{ . }}">
   {{ end }}
-    {{ template "HeaderDesktopNavigation" . }}
-    {{ template "HeaderMobileNavigation" . }}
-  </div>
-  {{ template "HeaderMobileMenu" . }}
-</div>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta name="theme-color">
 
-{{ if .Site.Menus.subnavigation }}
-  <div
-    class="main-menu flex pb-3 flex-col items-end justify-between md:justify-start space-x-3{{ if .Site.Params.Logo }} -mt-[15px]{{ end }}">
-    <div class="hidden md:flex items-center space-x-5">
-      {{ range .Site.Menus.subnavigation }}
-        <a
-          href="{{ .URL }}"
-          {{ if or (strings.HasPrefix .URL "http:" ) (strings.HasPrefix .URL "https:" ) }}
-            target="_blank"
-          {{ end }}
-          class="flex items-center">
-          {{ if .Pre }}
-            <span {{ if and .Pre .Name }}class="mr-1"{{ end }}>
-              {{ partial "icon.html" .Pre }}
-            </span>
-          {{ end }}
-          <p class="text-xs font-light text-gray-500 hover:text-gray-900" title="{{ .Title }}">
-            {{ .Name | markdownify }}
-          </p>
-        </a>
+  {{/* Title */}}
+  {{ if .IsHome -}}
+    <title>{{ .Site.Title | emojify }}</title>
+    <meta name="title" content="{{ .Site.Title | emojify }}">
+  {{- else -}}
+    <title>{{ .Title | emojify }} &middot; {{ .Site.Title | emojify }}</title>
+    <meta name="title" content="{{ .Title | emojify }} &middot; {{ .Site.Title | emojify }}">
+  {{- end }}
+
+  {{/* Metadata */}}
+  {{ with (.Params.Summary | default .Params.Description) | default .Site.Params.description -}}
+    <meta name="description" content="{{ . }}">
+  {{- end }}
+  {{ $keywords := .Params.tags | default .Site.Params.keywords }}
+  {{ with $keywords }}
+    <meta name="keywords" content="{{ delimit (uniq .) ", " }}">
+  {{ end }}
+  {{ with .Site.Params.robots }}
+    <meta name="robots" content="{{ . }}">
+  {{ end }}
+  {{ with .Params.robots }}
+    <meta name="robots" content="{{ . }}">
+  {{ end }}
+  <link rel="canonical" href="{{ .Permalink }}">
+  {{ range .AlternativeOutputFormats -}}
+    {{ printf `
+      <link rel="%s" type="%s" href="%s" title="%s" />` .Rel .MediaType.Type .RelPermalink ($.Site.Title | emojify) |
+      safeHTML
+    }}
+  {{ end -}}
+
+  {{/* Asset bundles */}}
+  {{ $assets := newScratch }}
+  {{ $cssScheme := resources.Get (printf "css/schemes/%s.css" (.Site.Params.colorScheme | default "blowfish")) }}
+  {{ if not $cssScheme }}
+    {{ $cssScheme = resources.Get "css/schemes/blowfish.css" }}
+  {{ end }}
+  {{ $assets.Add "css" (slice $cssScheme) }}
+  {{ $cssMain := resources.Get "css/compiled/main.css" }}
+  {{ $assets.Add "css" (slice $cssMain) }}
+  {{ $cssCustom := resources.Get "css/custom.css" }}
+  {{ if $cssCustom }}
+    {{ $assets.Add "css" (slice $cssCustom) }}
+  {{ end }}
+  {{ if not .Site.Params.disableImageZoom | default true }}
+    {{ $cssZoom := resources.Get "lib/zoom/style.css" }}
+    {{ $assets.Add "css" (slice $cssZoom) }}
+  {{ end }}
+  {{ $bundleCSS := $assets.Get "css" | resources.Concat "css/main.bundle.css" | resources.Minify | resources.Fingerprint
+    (.Site.Params.fingerprintAlgorithm | default "sha512")
+  }}
+  <link
+    type="text/css"
+    rel="stylesheet"
+    href="{{ $bundleCSS.RelPermalink }}"
+    integrity="{{ $bundleCSS.Data.Integrity }}">
+
+  {{ $jsAppearance := resources.Get "js/appearance.js" }}
+  {{ $jsAppearance = $jsAppearance | resources.ExecuteAsTemplate "js/appearance.js" . | resources.Minify | resources.Fingerprint (.Site.Params.fingerprintAlgorithm | default "sha512") }}
+  <script
+    type="text/javascript"
+    src="{{ $jsAppearance.RelPermalink }}"
+    integrity="{{ $jsAppearance.Data.Integrity }}"></script>
+  {{ if .Site.Params.enableSearch | default false }}
+    {{ $jsFuse := resources.Get "lib/fuse/fuse.min.js" }}
+    {{ $jsSearch := resources.Get "js/search.js" }}
+    {{ $assets.Add "js" (slice $jsFuse $jsSearch) }}
+  {{ end }}
+  {{ if .Site.Params.enableCodeCopy | default false }}
+    {{ $jsCode := resources.Get "js/code.js" }}
+    {{ $assets.Add "js" (slice $jsCode) }}
+  {{ end }}
+  {{ if .Site.Params.rtl | default false }}
+    {{ $jsRTL := resources.Get "js/rtl.js" }}
+    {{ $assets.Add "js" (slice $jsRTL) }}
+  {{ end }}
+  {{ $jsMobileMenu := resources.Get "js/mobilemenu.js" }}
+  {{ $assets.Add "js" (slice $jsMobileMenu) }}
+  {{ $buttonLikes := resources.Get "js/button-likes.js" }}
+  {{ $assets.Add "js" (slice $buttonLikes) }}
+  {{ $katexRender := resources.Get "js/katex-render.js" }}
+  {{ $assets.Add "js" (slice $katexRender) }}
+  {{ if $assets.Get "js" }}
+    {{ $bundleJS := $assets.Get "js" | resources.Concat "js/main.bundle.js" | resources.Minify | resources.Fingerprint
+      (.Site.Params.fingerprintAlgorithm | default "sha512")
+    }}
+    <script
+      defer
+      type="text/javascript"
+      id="script-bundle"
+      src="{{ $bundleJS.RelPermalink }}"
+      integrity="{{ $bundleJS.Data.Integrity }}"
+      data-copy="{{ i18n "code.copy" }}"
+      data-copied="{{ i18n "code.copied" }}"></script>
+  {{ end }}
+  {{ if not .Site.Params.disableImageZoom | default true }}
+    {{ $zoomJS := resources.Get "lib/zoom/zoom.min.umd.js" | resources.Fingerprint (.Site.Params.fingerprintAlgorithm | default "sha512") }}
+    <script src="{{ $zoomJS.RelPermalink }}" integrity="{{ $zoomJS.Data.Integrity }}"></script>
+  {{ end }}
+
+  {{/* Icons */}}
+  {{ if templates.Exists "partials/favicons.html" }}
+    {{ partialCached "favicons.html" .Site }}
+  {{ else }}
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ "apple-touch-icon.png" | relURL }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ "favicon-32x32.png" | relURL }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ "favicon-16x16.png" | relURL }}">
+    <link rel="manifest" href="{{ "site.webmanifest" | relURL }}">
+  {{ end }}
+
+  {{/* Site Verification */}}
+  {{ with .Site.Params.verification.google }}
+    <meta name="google-site-verification" content="{{ . }}">
+  {{ end }}
+  {{ with .Site.Params.verification.bing }}
+    <meta name="msvalidate.01" content="{{ . }}">
+  {{ end }}
+  {{ with .Site.Params.verification.pinterest }}
+    <meta name="p:domain_verify" content="{{ . }}">
+  {{ end }}
+  {{ with .Site.Params.verification.yandex }}
+    <meta name="yandex-verification" content="{{ . }}">
+  {{ end }}
+  {{ with .Site.Params.verification.fediverse }}
+    <meta name="fediverse:creator" content="{{ . }}">
+  {{ end }}
+
+  {{/* Social */}}
+  {{ template "_internal/opengraph.html" . }}
+  {{ template "_internal/twitter_cards.html" . }}
+
+  {{- /* Main page always uses this; fallback elsewhere if no feature image */ -}}
+  {{- /* See https://gohugo.io/templates/embedded/#open-graph */ -}}
+  {{- $images := .Resources.ByType "image" -}}
+  {{- $socialImage := $images.GetMatch "*feature*" -}}
+
+  {{- if not $socialImage -}}
+    {{- with .Site.Params.defaultSocialImage -}}
+      {{- if or (strings.HasPrefix . "http:") (strings.HasPrefix . "https:") -}}
+        {{- $socialImage = resources.GetRemote . -}}
+      {{- else -}}
+        {{- $socialImage = resources.Get . -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+
+  {{- with $socialImage -}}
+    <meta name="twitter:image" content="{{ .RelPermalink | absURL }}">
+    <meta property="og:image" content="{{ .RelPermalink | absURL }}">
+  {{- end -}}
+
+  {{/* Schema */}}
+  {{ partial "schema.html" . }}
+
+  {{/* Me */}}
+  {{ with .Site.Params.Author.name }}
+    <meta name="author" content="{{ . }}">
+  {{ end }}
+  {{ with .Site.Params.Author.links }}
+    {{ range $links := . }}
+      {{ range $name, $url := $links }}
+        {{ if not (strings.HasPrefix $url "mailto:") }}
+          <link href="{{ $url }}" rel="me">
+        {{ end }}
       {{ end }}
-    </div>
-  </div>
-{{ end }}
+    {{ end }}
+  {{ end }}
 
-{{ if .Site.Params.highlightCurrentMenuArea }}
+  {{/* Vendor */}}
+  {{ partial "vendor.html" . }}
+
+  {{/* Analytics */}}
+  {{ partial "analytics/main.html" .Site }}
+
+  {{/* Extend head - eg. for custom analytics scripts, etc. */}}
+  {{ if templates.Exists "partials/extend-head.html" }}
+    {{ partialCached "extend-head.html" .Site }}
+  {{ end }}
+
+  {{/* Uncached extend head - Example: https://gohugo.io/methods/page/hasshortcode/ */}}
+  {{ if templates.Exists "partials/extend-head-uncached.html" }}
+    {{ partial "extend-head-uncached.html" . }}
+  {{ end }}
+
+  {{/* Firebase */}}
+  {{ with $.Site.Params.firebase }}
+    {{ if isset $.Site.Params "firebase" }}
+      <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+      <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+      <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script>
-    (function () {
-      var $mainmenu = $(".main-menu");
-      var path = window.location.pathname;
-      $mainmenu.find('a[href="' + path + '"]').each(function (i, e) {
-        $(e).children("p").addClass("active");
-      });
-    })();
+
+    const firebaseConfig = {
+      apiKey: {{ $.Site.Params.firebase.apiKey }},
+      authDomain: {{ $.Site.Params.firebase.apiKey }},
+      projectId: {{ $.Site.Params.firebase.projectId }},
+      storageBucket: {{ $.Site.Params.firebase.storageBucket }},
+      messagingSenderId: {{ $.Site.Params.firebase.messagingSenderId }},
+      appId: {{ $.Site.Params.firebase.appId }},
+      measurementId: {{ $.Site.Params.firebase.measurementId }}
+    };
+
+    var app = firebase.initializeApp(firebaseConfig);
+    var db = firebase.firestore();
+    var auth = firebase.auth();
+
   </script>
-{{ end }}
+    {{ end }}
+  {{ end }}
+
+  {{/* Advertisement */}}
+  {{ with .Site.Params.advertisement.adsense }}
+    <meta name="google-adsense-account" content="{{ . }}">
+  {{ end }}
+</head>
