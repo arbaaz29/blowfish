@@ -1,4 +1,5 @@
 {{ $disableImageOptimization := .Site.Params.disableImageOptimization | default false }}
+{{ $headline := .Params.authorHeadline | default .Site.Params.Author.headline }}
 
 <article
   class="{{ if not .Site.Params.homepage.showRecent }} h-full {{ end }} flex flex-col items-center justify-start text-center animate-fade-in pt-4">
@@ -15,12 +16,12 @@
         {{ if not $disableImageOptimization }}
           {{ $authorImage = $authorImage.Fill (print "288x288 q" ( $.Site.Params.Author.imagequality | default "96" )) }}
         {{ end }}
-        <img
-          class="mb-1 rounded-full h-16 w-16 animate-scale-in"
-          width="64"
-          height="64"
-          alt="{{ $.Site.Params.Author.name | default " Author" }}"
-          src="{{ $authorImage.RelPermalink }}">
+        <div class="self-stretch flex items-center flex-shrink-0 mb-1">
+          <img
+            class="!mt-0 !mb-0 h-full max-h-16 w-auto aspect-square rounded-full object-cover animate-scale-in"
+            alt="{{ $.Site.Params.Author.name | default "Author" }}"
+            src="{{ $authorImage.RelPermalink }}">
+        </div>
       {{ end }}
     {{ end }}
 
@@ -28,8 +29,8 @@
       {{ .Site.Params.Author.name | default .Site.Title }}
     </h1>
 
-    {{ with .Site.Params.Author.headline }}
-      <h2 class="text-sm text-neutral-500 dark:text-neutral-400 animate-fade-in-delay">
+    {{ with $headline }}
+      <h2 class="hidden lg:block text-sm text-neutral-500 dark:text-neutral-400 animate-fade-in-delay">
         {{ . | markdownify }}
       </h2>
     {{ end }}
